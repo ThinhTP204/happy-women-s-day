@@ -1,0 +1,1336 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trúc Quỳnh - 20/10 Special</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #ff1493;
+            --secondary: #ff69b4;
+            --accent: #da70d6;
+            --light: #ffd6e8;
+            --dark: #1a0a1f;
+            --white: #ffffff;
+            --glass: rgba(255, 255, 255, 0.1);
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a0a1f 0%, #2d1b4e 50%, #1a0a1f 100%);
+        }
+
+        /* ===== THREE.JS CANVAS ===== */
+        #canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        /* ===== MAIN CONTAINER ===== */
+        .container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            pointer-events: none;
+        }
+
+        /* ===== PAGE TRANSITION ===== */
+        .page-transition {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255, 20, 147, 0.8) 0%, rgba(26, 10, 31, 0.9) 100%);
+            z-index: 100;
+            opacity: 1;
+            pointer-events: none;
+        }
+
+        /* ===== CONTENT SECTION ===== */
+        .content {
+            text-align: center;
+            color: var(--white);
+            z-index: 20;
+            pointer-events: auto;
+            max-width: 90%;
+            width: 100%;
+        }
+
+        .title {
+            font-size: clamp(2rem, 8vw, 4rem);
+            font-weight: 900;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #ff1493, #ff69b4, #da70d6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(255, 20, 147, 0.5);
+            letter-spacing: 2px;
+            opacity: 0;
+        }
+
+        .subtitle {
+            font-size: clamp(1.2rem, 4vw, 2rem);
+            font-weight: 600;
+            margin-bottom: 2rem;
+            color: var(--light);
+            opacity: 0;
+            text-shadow: 0 0 20px rgba(255, 105, 180, 0.3);
+        }
+
+        .wishes {
+            font-size: clamp(1rem, 2.5vw, 1.3rem);
+            line-height: 2;
+            margin-bottom: 3rem;
+            color: rgba(255, 255, 255, 0.9);
+            opacity: 0;
+        }
+
+        .wish-line {
+            margin: 0.8rem 0;
+            opacity: 0;
+        }
+
+        /* ===== BUTTONS ===== */
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            padding: 0.8rem 1.8rem;
+            font-size: clamp(0.85rem, 2vw, 1rem);
+            border: 2px solid var(--primary);
+            background: rgba(255, 20, 147, 0.2);
+            color: var(--white);
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 20px rgba(255, 20, 147, 0.3);
+            pointer-events: auto;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:hover {
+            background: rgba(255, 20, 147, 0.4);
+            box-shadow: 0 0 40px rgba(255, 20, 147, 0.6);
+            transform: translateY(-3px);
+        }
+
+        .btn:active {
+            transform: translateY(-1px);
+        }
+
+        .btn-gift {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+        }
+
+        .btn-music {
+            background: rgba(218, 112, 214, 0.2);
+            border-color: var(--accent);
+        }
+
+        .btn-game {
+            background: rgba(255, 105, 180, 0.25);
+            border-color: var(--secondary);
+        }
+
+        .btn-gallery {
+            background: rgba(218, 112, 214, 0.25);
+            border-color: var(--accent);
+        }
+
+        .btn-countdown {
+            background: rgba(255, 20, 147, 0.25);
+            border-color: var(--primary);
+        }
+
+        /* ===== MODAL ===== */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            z-index: 50;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            overflow-y: auto;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal {
+            background: linear-gradient(135deg, rgba(255, 20, 147, 0.15), rgba(218, 112, 214, 0.15));
+            border: 2px solid rgba(255, 105, 180, 0.5);
+            border-radius: 30px;
+            padding: clamp(2rem, 5vw, 3rem);
+            max-width: 90%;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            text-align: center;
+            color: var(--white);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 0 60px rgba(255, 20, 147, 0.4), inset 0 0 30px rgba(255, 255, 255, 0.1);
+            transform: scale(0.5);
+            opacity: 0;
+            animation: modalAppear 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            margin: 2rem auto;
+        }
+
+        @keyframes modalAppear {
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .modal h2 {
+            font-size: clamp(1.5rem, 4vw, 2.5rem);
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #ff1493, #ff69b4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .modal p {
+            font-size: clamp(1rem, 2.5vw, 1.3rem);
+            line-height: 1.8;
+            margin-bottom: 2rem;
+            color: rgba(255, 255, 255, 0.95);
+        }
+
+        .heart-animation {
+            font-size: 4rem;
+            display: inline-block;
+            margin: 1rem 0;
+            animation: heartbeat 1.2s infinite;
+        }
+
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            25% { transform: scale(1.3); }
+            50% { transform: scale(1); }
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+        }
+
+        .btn-close {
+            background: rgba(218, 112, 214, 0.3);
+            border-color: var(--accent);
+        }
+
+        .btn-close:hover {
+            background: rgba(218, 112, 214, 0.5);
+            box-shadow: 0 0 30px rgba(218, 112, 214, 0.6);
+        }
+
+        /* ===== GAME STYLES ===== */
+        .game-container {
+            margin: 2rem 0;
+            min-height: 300px;
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 2rem;
+            font-size: 1.2rem;
+        }
+
+        .game-area {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            overflow: hidden;
+            border: 2px solid rgba(255, 105, 180, 0.3);
+        }
+
+        .falling-heart {
+            position: absolute;
+            font-size: 2.5rem;
+            cursor: pointer;
+            animation: fall linear;
+            user-select: none;
+            transition: transform 0.1s;
+        }
+
+        .falling-heart:hover {
+            transform: scale(1.3);
+        }
+
+        @keyframes fall {
+            to {
+                top: 100%;
+            }
+        }
+
+        .game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary);
+            text-shadow: 0 0 20px rgba(255, 20, 147, 0.8);
+        }
+
+        /* ===== GALLERY STYLES ===== */
+        .gallery-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .gallery-item {
+            aspect-ratio: 1;
+            background: linear-gradient(135deg, rgba(255, 20, 147, 0.3), rgba(218, 112, 214, 0.3));
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid rgba(255, 105, 180, 0.3);
+        }
+
+        .gallery-item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(255, 20, 147, 0.6);
+        }
+
+        /* ===== COUNTDOWN STYLES ===== */
+        .countdown-container {
+            margin: 2rem 0;
+        }
+
+        .countdown-display {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+        }
+
+        .countdown-item {
+            background: rgba(255, 20, 147, 0.2);
+            border: 2px solid rgba(255, 105, 180, 0.5);
+            border-radius: 15px;
+            padding: 1.5rem;
+            min-width: 100px;
+            backdrop-filter: blur(10px);
+        }
+
+        .countdown-number {
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--primary);
+            text-shadow: 0 0 20px rgba(255, 20, 147, 0.8);
+        }
+
+        .countdown-label {
+            font-size: 1rem;
+            color: var(--light);
+            margin-top: 0.5rem;
+        }
+
+        /* ===== LOVE CALCULATOR STYLES ===== */
+        .calculator-container {
+            margin: 2rem 0;
+        }
+
+        .calculator-input {
+            width: 100%;
+            max-width: 400px;
+            padding: 1rem;
+            margin: 1rem auto;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 105, 180, 0.5);
+            border-radius: 15px;
+            color: var(--white);
+            font-size: 1.1rem;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .calculator-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .calculator-result {
+            margin: 2rem 0;
+            font-size: 1.5rem;
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .love-percentage {
+            font-size: 4rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #ff1493, #ff69b4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 1rem 0;
+        }
+
+        /* ===== MESSAGE STYLES ===== */
+        .message-container {
+            margin: 2rem 0;
+        }
+
+        .message-textarea {
+            width: 100%;
+            max-width: 500px;
+            min-height: 150px;
+            padding: 1rem;
+            margin: 1rem auto;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 105, 180, 0.5);
+            border-radius: 15px;
+            color: var(--white);
+            font-size: 1.1rem;
+            font-family: inherit;
+            resize: vertical;
+            backdrop-filter: blur(10px);
+        }
+
+        .message-textarea::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .message-list {
+            margin-top: 2rem;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .message-item {
+            background: rgba(255, 20, 147, 0.15);
+            border: 1px solid rgba(255, 105, 180, 0.3);
+            border-radius: 15px;
+            padding: 1rem;
+            margin: 1rem 0;
+            text-align: left;
+        }
+
+        .message-date {
+            font-size: 0.9rem;
+            color: var(--light);
+            margin-bottom: 0.5rem;
+        }
+
+        .message-text {
+            font-size: 1.1rem;
+            color: var(--white);
+        }
+
+        /* ===== FLOATING ELEMENTS ===== */
+        .floating-hearts {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        .heart {
+            position: absolute;
+            font-size: 2rem;
+            opacity: 0.7;
+            animation: float-down 6s infinite linear;
+        }
+
+        @keyframes float-down {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* ===== CONFETTI ===== */
+        #confetti-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 30;
+            pointer-events: none;
+        }
+
+        /* ===== SPARKLES ===== */
+        .sparkle {
+            position: fixed;
+            pointer-events: none;
+            font-size: 1.5rem;
+            animation: sparkle-fade 1s ease-out forwards;
+        }
+
+        @keyframes sparkle-fade {
+            0% {
+                opacity: 1;
+                transform: translate(0, 0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(var(--tx), var(--ty)) scale(0);
+            }
+        }
+
+        /* ===== MUSIC PLAYER ===== */
+        .music-indicator {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 40;
+            pointer-events: auto;
+        }
+
+        .music-icon {
+            font-size: 1.5rem;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.7; }
+            50% { transform: scale(1.2); opacity: 1; }
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .button-group {
+                gap: 0.8rem;
+            }
+
+            .btn {
+                padding: 0.7rem 1.5rem;
+                font-size: 0.85rem;
+            }
+
+            .modal {
+                padding: 1.5rem;
+            }
+
+            .music-indicator {
+                bottom: 1rem;
+                right: 1rem;
+            }
+
+            .countdown-display {
+                gap: 1rem;
+            }
+
+            .countdown-item {
+                padding: 1rem;
+                min-width: 80px;
+            }
+
+            .countdown-number {
+                font-size: 2rem;
+            }
+
+            .game-area {
+                height: 300px;
+            }
+        }
+
+        /* ===== SCROLLBAR ===== */
+        .modal::-webkit-scrollbar,
+        .message-list::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .modal::-webkit-scrollbar-track,
+        .message-list::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .modal::-webkit-scrollbar-thumb,
+        .message-list::-webkit-scrollbar-thumb {
+            background: rgba(255, 20, 147, 0.5);
+            border-radius: 10px;
+        }
+
+        .modal::-webkit-scrollbar-thumb:hover,
+        .message-list::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 20, 147, 0.8);
+        }
+    </style>
+</head>
+<body>
+    <!-- THREE.JS CANVAS -->
+    <canvas id="canvas"></canvas>
+
+    <!-- CONFETTI CANVAS -->
+    <canvas id="confetti-canvas"></canvas>
+
+    <!-- FLOATING HEARTS -->
+    <div class="floating-hearts" id="floating-hearts"></div>
+
+    <!-- MAIN CONTENT -->
+    <div class="container">
+        <div class="page-transition" id="pageTransition"></div>
+        
+        <div class="content">
+            <h1 class="title">💖 Happy Vietnamese Women's Day 20/10 💖</h1>
+            <p class="subtitle">Gửi đến Trúc Quỳnh xinh đẹp nhất thế gian 🌸</p>
+            
+            <div class="wishes">
+                <div class="wish-line">✨ Chúc Quỳnh luôn rạng rỡ như ánh nắng mặt trời</div>
+                <div class="wish-line">💐 Mỗi ngày đều là một ngày đặc biệt với những điều tuyệt vời</div>
+                <div class="wish-line">🌟 Anh chúc em hạnh phúc, thành công và yêu thương vô tận</div>
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-gift" id="giftBtn">💝 Nhận quà</button>
+                <button class="btn btn-game" id="gameBtn">🎮 Chơi game</button>
+                <button class="btn btn-gallery" id="galleryBtn">📸 Thư viện</button>
+                <button class="btn btn-countdown" id="countdownBtn">⏰ Đếm ngược</button>
+                <button class="btn btn-music" id="musicBtn">🎵 Nhạc</button>
+            </div>
+        </div>
+
+        <div class="music-indicator" id="musicIndicator" style="display: none;">
+            <span class="music-icon">🎵</span>
+        </div>
+    </div>
+
+    <!-- GIFT MODAL -->
+    <div class="modal-overlay" id="giftModal">
+        <div class="modal">
+            <h2>🎁 Quà Tặng Đặc Biệt 🎁</h2>
+            <div class="heart-animation">💖</div>
+            <p>Anh chúc Quỳnh luôn hạnh phúc và rực rỡ như ngày hôm nay 💐</p>
+            <p style="font-size: clamp(0.9rem, 2vw, 1.1rem); color: rgba(255, 255, 255, 0.8);">
+                Cảm ơn vì đã là ánh sáng trong cuộc sống của anh. 
+                Yêu em rất nhiều! 💕
+            </p>
+            <div class="modal-buttons">
+                <button class="btn btn-gift" id="loveCalcBtn">💝 Tính tình yêu</button>
+                <button class="btn btn-gift" id="messageBtn">📝 Gửi lời nhắn</button>
+                <button class="btn btn-close" id="closeGiftBtn">✕ Đóng</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- GAME MODAL -->
+    <div class="modal-overlay" id="gameModal">
+        <div class="modal">
+            <h2>🎮 Trò Chơi Bắt Trái Tim 💖</h2>
+            <p>Bấm vào các trái tim rơi xuống để ghi điểm!</p>
+            <div class="game-container">
+                <div class="game-info">
+                    <div>Điểm: <span id="score">0</span></div>
+                    <div>Thời gian: <span id="timer">30</span>s</div>
+                </div>
+                <div class="game-area" id="gameArea"></div>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn btn-gift" id="startGameBtn">▶️ Bắt đầu</button>
+                <button class="btn btn-close" id="closeGameBtn">✕ Đóng</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- GALLERY MODAL -->
+    <div class="modal-overlay" id="galleryModal">
+        <div class="modal">
+            <h2>📸 Thư Viện Kỷ Niệm 💕</h2>
+            <p>Những khoảnh khắc đẹp của chúng ta</p>
+            <div class="gallery-container">
+                <div class="gallery-item">💖</div>
+                <div class="gallery-item">🌹</div>
+                <div class="gallery-item">💝</div>
+                <div class="gallery-item">🌸</div>
+                <div class="gallery-item">💕</div>
+                <div class="gallery-item">🌺</div>
+            </div>
+            <p style="font-size: 1rem; margin-top: 2rem; color: rgba(255, 255, 255, 0.7);">
+                Mỗi biểu tượng đại diện cho một kỷ niệm đẹp ✨
+            </p>
+            <div class="modal-buttons">
+                <button class="btn btn-close" id="closeGalleryBtn">✕ Đóng</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- COUNTDOWN MODAL -->
+    <div class="modal-overlay" id="countdownModal">
+        <div class="modal">
+            <h2>⏰ Đếm Ngược Đến Ngày Đặc Biệt 💖</h2>
+            <p>Thời gian còn lại đến kỷ niệm của chúng ta</p>
+            <div class="countdown-container">
+                <div class="countdown-display">
+                    <div class="countdown-item">
+                        <div class="countdown-number" id="days">0</div>
+                        <div class="countdown-label">Ngày</div>
+                    </div>
+                    <div class="countdown-item">
+                        <div class="countdown-number" id="hours">0</div>
+                        <div class="countdown-label">Giờ</div>
+                    </div>
+                    <div class="countdown-item">
+                        <div class="countdown-number" id="minutes">0</div>
+                        <div class="countdown-label">Phút</div>
+                    </div>
+                    <div class="countdown-item">
+                        <div class="countdown-number" id="seconds">0</div>
+                        <div class="countdown-label">Giây</div>
+                    </div>
+                </div>
+                <p style="font-size: 1.2rem; margin-top: 2rem;">
+                    Đếm ngược đến 31/12/2025 - Năm mới hạnh phúc! 🎉
+                </p>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn btn-close" id="closeCountdownBtn">✕ Đóng</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOVE CALCULATOR MODAL -->
+    <div class="modal-overlay" id="loveCalcModal">
+        <div class="modal">
+            <h2>💝 Máy Tính Tình Yêu 💕</h2>
+            <p>Tính toán độ hợp của hai người</p>
+            <div class="calculator-container">
+                <input type="text" class="calculator-input" id="name1" placeholder="Tên người thứ nhất" value="Trúc Quỳnh">
+                <input type="text" class="calculator-input" id="name2" placeholder="Tên người thứ hai">
+                <div class="calculator-result" id="calcResult">
+                    <p>Nhập tên và bấm tính toán!</p>
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn btn-gift" id="calculateBtn">💖 Tính toán</button>
+                <button class="btn btn-close" id="closeLoveCalcBtn">✕ Đóng</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MESSAGE MODAL -->
+    <div class="modal-overlay" id="messageModal">
+        <div class="modal">
+            <h2>📝 Gửi Lời Nhắn Ngọt Ngào 💌</h2>
+            <p>Viết những lời yêu thương cho nhau</p>
+            <div class="message-container">
+                <textarea class="message-textarea" id="messageInput" placeholder="Viết lời nhắn của bạn..."></textarea>
+                <div class="message-list" id="messageList"></div>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn btn-gift" id="sendMessageBtn">💌 Gửi</button>
+                <button class="btn btn-close" id="closeMessageBtn">✕ Đóng</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AUDIO -->
+    <audio id="bgMusic" loop>
+        <source src="https://www.nhaccuatui.com/song/3IruhA2EWeSo?source=app" type="audio/mpeg">
+    </audio>
+
+    <!-- SCRIPTS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <script>
+        // ===== GLOBAL STATE =====
+        let musicPlaying = false;
+        let scene, camera, renderer;
+        let particles = [];
+        let hearts3d = [];
+        let gameInterval = null;
+        let gameTimer = null;
+        let countdownInterval = null;
+
+        // ===== PAGE TRANSITION ANIMATION =====
+        function pageTransitionIn() {
+            const transition = document.getElementById('pageTransition');
+            gsap.to(transition, {
+                opacity: 0,
+                duration: 1.5,
+                ease: 'power2.inOut',
+                onComplete: () => {
+                    transition.style.pointerEvents = 'none';
+                }
+            });
+        }
+
+        // ===== THREE.JS SETUP =====
+        function initThreeJS() {
+            const canvas = document.getElementById('canvas');
+            
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setClearColor(0x000000, 0);
+            camera.position.z = 50;
+
+            const ambientLight = new THREE.AmbientLight(0xff1493, 0.6);
+            scene.add(ambientLight);
+
+            const pointLight1 = new THREE.PointLight(0xff69b4, 1, 100);
+            pointLight1.position.set(30, 30, 30);
+            scene.add(pointLight1);
+
+            const pointLight2 = new THREE.PointLight(0xda70d6, 0.8, 100);
+            pointLight2.position.set(-30, -30, 30);
+            scene.add(pointLight2);
+
+            createParticles();
+            create3DHearts();
+
+            function animate() {
+                requestAnimationFrame(animate);
+
+                particles.forEach(particle => {
+                    particle.position.y -= particle.speed;
+                    particle.rotation.x += 0.01;
+                    particle.rotation.y += 0.01;
+
+                    if (particle.position.y < -60) {
+                        particle.position.y = 60;
+                    }
+                });
+
+                hearts3d.forEach((heart, index) => {
+                    heart.rotation.x += 0.005;
+                    heart.rotation.y += 0.008;
+                    heart.position.y += Math.sin(Date.now() * 0.001 + index) * 0.02;
+                });
+
+                renderer.render(scene, camera);
+            }
+
+            animate();
+
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+        }
+
+        function createParticles() {
+            const geometry = new THREE.BufferGeometry();
+            const material = new THREE.PointsMaterial({
+                color: 0xff69b4,
+                size: 0.5,
+                sizeAttenuation: true,
+                transparent: true,
+                opacity: 0.8
+            });
+
+            for (let i = 0; i < 2000; i++) {
+                const x = (Math.random() - 0.5) * 200;
+                const y = (Math.random() - 0.5) * 200;
+                const z = (Math.random() - 0.5) * 200;
+
+                geometry.attributes.position = new THREE.BufferAttribute(
+                    new Float32Array([x, y, z]),
+                    3
+                );
+
+                const particle = new THREE.Points(geometry, material);
+                particle.position.set(x, y, z);
+                particle.speed = Math.random() * 0.1 + 0.05;
+                scene.add(particle);
+                particles.push(particle);
+            }
+        }
+
+        function create3DHearts() {
+            const heartShape = new THREE.Shape();
+            heartShape.moveTo(25, 25);
+            heartShape.bezierCurveTo(25, 25, 20, 0, 0, 0);
+            heartShape.bezierCurveTo(-30, 0, -30, 35, -30, 35);
+            heartShape.bezierCurveTo(-30, 55, -10, 77, 25, 95);
+            heartShape.bezierCurveTo(60, 77, 80, 55, 80, 35);
+            heartShape.bezierCurveTo(80, 35, 80, 0, 50, 0);
+            heartShape.bezierCurveTo(30, 0, 25, 25, 25, 25);
+
+            for (let i = 0; i < 5; i++) {
+                const geometry = new THREE.ShapeGeometry(heartShape);
+                const material = new THREE.MeshPhongMaterial({
+                    color: new THREE.Color().setHSL(0.9 + Math.random() * 0.1, 1, 0.5),
+                    emissive: 0xff1493,
+                    shininess: 100
+                });
+
+                const heart = new THREE.Mesh(geometry, material);
+                heart.position.set(
+                    (Math.random() - 0.5) * 80,
+                    (Math.random() - 0.5) * 80,
+                    (Math.random() - 0.5) * 80
+                );
+                heart.scale.set(0.3, 0.3, 0.3);
+                scene.add(heart);
+                hearts3d.push(heart);
+            }
+        }
+
+        // ===== GSAP ANIMATIONS =====
+        function animateContent() {
+            const tl = gsap.timeline();
+
+            tl.to('.title', {
+                opacity: 1,
+                y: 0,
+                duration: 1,
+                ease: 'back.out'
+            }, 0.3)
+            .to('.subtitle', {
+                opacity: 1,
+                y: 0,
+                duration: 0.8,
+                ease: 'back.out'
+            }, 0.6)
+            .to('.wish-line', {
+                opacity: 1,
+                y: 0,
+                duration: 0.6,
+                stagger: 0.2,
+                ease: 'back.out'
+            }, 1)
+            .to('.button-group', {
+                opacity: 1,
+                y: 0,
+                duration: 0.8,
+                ease: 'back.out'
+            }, 1.8);
+
+            gsap.to('.title', {
+                textShadow: '0 0 50px rgba(255, 20, 147, 0.8)',
+                duration: 2,
+                repeat: -1,
+                yoyo: true,
+                ease: 'sine.inOut'
+            });
+
+            createFloatingHearts();
+        }
+
+        function createFloatingHearts() {
+            const container = document.getElementById('floating-hearts');
+            const hearts = ['💖', '💕', '💗', '💝', '🌹', '🌸'];
+
+            setInterval(() => {
+                const heart = document.createElement('div');
+                heart.className = 'heart';
+                heart.textContent = hearts[Math.floor(Math.random() * hearts.length)];
+                heart.style.left = Math.random() * 100 + '%';
+                heart.style.animationDuration = (Math.random() * 3 + 4) + 's';
+                heart.style.opacity = Math.random() * 0.5 + 0.3;
+                container.appendChild(heart);
+
+                setTimeout(() => heart.remove(), 7000);
+            }, 300);
+        }
+
+        // ===== CONFETTI EFFECT =====
+        function createConfetti() {
+            const canvas = document.getElementById('confetti-canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const confetti = [];
+            const colors = ['#ff1493', '#ff69b4', '#da70d6', '#ffd6e8', '#ffffff'];
+
+            for (let i = 0; i < 100; i++) {
+                confetti.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height - canvas.height,
+                    vx: (Math.random() - 0.5) * 8,
+                    vy: Math.random() * 5 + 5,
+                    size: Math.random() * 8 + 4,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    rotation: Math.random() * Math.PI * 2,
+                    rotationSpeed: (Math.random() - 0.5) * 0.2
+                });
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                confetti.forEach((particle, index) => {
+                    particle.x += particle.vx;
+                    particle.y += particle.vy;
+                    particle.vy += 0.1;
+                    particle.rotation += particle.rotationSpeed;
+
+                    ctx.save();
+                    ctx.translate(particle.x, particle.y);
+                    ctx.rotate(particle.rotation);
+                    ctx.fillStyle = particle.color;
+                    ctx.fillRect(-particle.size / 2, -particle.size / 2, particle.size, particle.size);
+                    ctx.restore();
+
+                    if (particle.y > canvas.height) {
+                        confetti.splice(index, 1);
+                    }
+                });
+
+                if (confetti.length > 0) {
+                    requestAnimationFrame(animate);
+                }
+            }
+
+            animate();
+        }
+
+        // ===== SPARKLE EFFECT =====
+        function createSparkle(x, y) {
+            const sparkle = document.createElement('div');
+            sparkle.className = 'sparkle';
+            sparkle.textContent = '✨';
+            sparkle.style.left = x + 'px';
+            sparkle.style.top = y + 'px';
+            sparkle.style.setProperty('--tx', (Math.random() - 0.5) * 100 + 'px');
+            sparkle.style.setProperty('--ty', (Math.random() - 0.5) * 100 + 'px');
+            document.body.appendChild(sparkle);
+
+            setTimeout(() => sparkle.remove(), 1000);
+        }
+
+        // ===== MUSIC CONTROL =====
+        function toggleMusic() {
+            const audio = document.getElementById('bgMusic');
+            const indicator = document.getElementById('musicIndicator');
+
+            if (musicPlaying) {
+                audio.pause();
+                indicator.style.display = 'none';
+                musicPlaying = false;
+            } else {
+                audio.play().catch(err => console.log('Audio play failed:', err));
+                indicator.style.display = 'block';
+                musicPlaying = true;
+            }
+        }
+
+        // ===== MODAL CONTROL =====
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.add('active');
+            
+            if (modalId === 'giftModal') {
+                createConfetti();
+                if (!musicPlaying) toggleMusic();
+            }
+            
+            if (modalId === 'countdownModal') {
+                startCountdown();
+            }
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.remove('active');
+            
+            if (modalId === 'gameModal') {
+                stopGame();
+            }
+            
+            if (modalId === 'countdownModal' && countdownInterval) {
+                clearInterval(countdownInterval);
+            }
+        }
+
+        // ===== GAME LOGIC =====
+        let score = 0;
+        let timeLeft = 30;
+
+        function startGame() {
+            score = 0;
+            timeLeft = 30;
+            document.getElementById('score').textContent = score;
+            document.getElementById('timer').textContent = timeLeft;
+            document.getElementById('gameArea').innerHTML = '';
+            
+            gameInterval = setInterval(createFallingHeart, 800);
+            gameTimer = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer').textContent = timeLeft;
+                
+                if (timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        function createFallingHeart() {
+            const gameArea = document.getElementById('gameArea');
+            const heart = document.createElement('div');
+            heart.className = 'falling-heart';
+            heart.textContent = ['💖', '💕', '💗', '💝'][Math.floor(Math.random() * 4)];
+            heart.style.left = Math.random() * 90 + '%';
+            heart.style.top = '-50px';
+            heart.style.animationDuration = (Math.random() * 2 + 2) + 's';
+            
+            heart.addEventListener('click', () => {
+                score++;
+                document.getElementById('score').textContent = score;
+                heart.remove();
+                createSparkle(
+                    heart.getBoundingClientRect().left,
+                    heart.getBoundingClientRect().top
+                );
+            });
+            
+            gameArea.appendChild(heart);
+            
+            setTimeout(() => {
+                if (heart.parentNode) heart.remove();
+            }, 4000);
+        }
+
+        function endGame() {
+            stopGame();
+            const gameArea = document.getElementById('gameArea');
+            gameArea.innerHTML = `<div class="game-over">Game Over!<br>Điểm: ${score} 💖</div>`;
+        }
+
+        function stopGame() {
+            if (gameInterval) clearInterval(gameInterval);
+            if (gameTimer) clearInterval(gameTimer);
+            gameInterval = null;
+            gameTimer = null;
+        }
+
+        // ===== COUNTDOWN LOGIC =====
+        function startCountdown() {
+            const targetDate = new Date('2025-12-31T00:00:00').getTime();
+            
+            function updateCountdown() {
+                const now = new Date().getTime();
+                const distance = targetDate - now;
+                
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                
+                document.getElementById('days').textContent = days;
+                document.getElementById('hours').textContent = hours;
+                document.getElementById('minutes').textContent = minutes;
+                document.getElementById('seconds').textContent = seconds;
+            }
+            
+            updateCountdown();
+            countdownInterval = setInterval(updateCountdown, 1000);
+        }
+
+        // ===== LOVE CALCULATOR =====
+        function calculateLove() {
+            const name1 = document.getElementById('name1').value.trim();
+            const name2 = document.getElementById('name2').value.trim();
+            const result = document.getElementById('calcResult');
+            
+            if (!name1 || !name2) {
+                result.innerHTML = '<p>Vui lòng nhập đầy đủ tên!</p>';
+                return;
+            }
+            
+            // Simple "random" calculation based on names
+            const combined = name1.toLowerCase() + name2.toLowerCase();
+            let sum = 0;
+            for (let i = 0; i < combined.length; i++) {
+                sum += combined.charCodeAt(i);
+            }
+            const percentage = (sum % 30) + 70; // Always 70-100%
+            
+            let message = '';
+            if (percentage >= 90) {
+                message = 'Hoàn hảo! Hai người sinh ra dành cho nhau! 💖';
+            } else if (percentage >= 80) {
+                message = 'Tuyệt vời! Tình yêu rất mạnh mẽ! 💕';
+            } else {
+                message = 'Rất tốt! Hãy giữ gìn tình yêu này! 💗';
+            }
+            
+            result.innerHTML = `
+                <div class="love-percentage">${percentage}%</div>
+                <p>${message}</p>
+            `;
+            createConfetti();
+        }
+
+        // ===== MESSAGE SYSTEM =====
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const messageList = document.getElementById('messageList');
+            const text = input.value.trim();
+            
+            if (!text) return;
+            
+            const messageItem = document.createElement('div');
+            messageItem.className = 'message-item';
+            messageItem.innerHTML = `
+                <div class="message-date">${new Date().toLocaleString('vi-VN')}</div>
+                <div class="message-text">${text}</div>
+            `;
+            
+            messageList.insertBefore(messageItem, messageList.firstChild);
+            input.value = '';
+            
+            // Save to localStorage
+            const messages = JSON.parse(localStorage.getItem('loveMessages') || '[]');
+            messages.unshift({ text, date: new Date().toISOString() });
+            localStorage.setItem('loveMessages', JSON.stringify(messages.slice(0, 10)));
+            
+            createSparkle(window.innerWidth / 2, window.innerHeight / 2);
+        }
+
+        function loadMessages() {
+            const messageList = document.getElementById('messageList');
+            const messages = JSON.parse(localStorage.getItem('loveMessages') || '[]');
+            
+            messages.forEach(msg => {
+                const messageItem = document.createElement('div');
+                messageItem.className = 'message-item';
+                messageItem.innerHTML = `
+                    <div class="message-date">${new Date(msg.date).toLocaleString('vi-VN')}</div>
+                    <div class="message-text">${msg.text}</div>
+                `;
+                messageList.appendChild(messageItem);
+            });
+        }
+
+        // ===== EVENT LISTENERS =====
+        document.getElementById('giftBtn').addEventListener('click', () => openModal('giftModal'));
+        document.getElementById('gameBtn').addEventListener('click', () => openModal('gameModal'));
+        document.getElementById('galleryBtn').addEventListener('click', () => openModal('galleryModal'));
+        document.getElementById('countdownBtn').addEventListener('click', () => openModal('countdownModal'));
+        document.getElementById('musicBtn').addEventListener('click', toggleMusic);
+        
+        document.getElementById('closeGiftBtn').addEventListener('click', () => closeModal('giftModal'));
+        document.getElementById('closeGameBtn').addEventListener('click', () => closeModal('gameModal'));
+        document.getElementById('closeGalleryBtn').addEventListener('click', () => closeModal('galleryModal'));
+        document.getElementById('closeCountdownBtn').addEventListener('click', () => closeModal('countdownModal'));
+        document.getElementById('closeLoveCalcBtn').addEventListener('click', () => closeModal('loveCalcModal'));
+        document.getElementById('closeMessageBtn').addEventListener('click', () => closeModal('messageModal'));
+        
+        document.getElementById('startGameBtn').addEventListener('click', startGame);
+        document.getElementById('loveCalcBtn').addEventListener('click', () => openModal('loveCalcModal'));
+        document.getElementById('messageBtn').addEventListener('click', () => {
+            openModal('messageModal');
+            loadMessages();
+        });
+        document.getElementById('calculateBtn').addEventListener('click', calculateLove);
+        document.getElementById('sendMessageBtn').addEventListener('click', sendMessage);
+        
+        // Close modals on overlay click
+        document.querySelectorAll('.modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) {
+                    closeModal(overlay.id);
+                }
+            });
+        });
+        
+        // Sparkle on mouse move
+        document.addEventListener('mousemove', (e) => {
+            if (Math.random() > 0.95) {
+                createSparkle(e.clientX, e.clientY);
+            }
+        });
+        
+        // Gallery item click effect
+        document.querySelectorAll('.gallery-item').forEach(item => {
+            item.addEventListener('click', function() {
+                createConfetti();
+                createSparkle(
+                    this.getBoundingClientRect().left + this.offsetWidth / 2,
+                    this.getBoundingClientRect().top + this.offsetHeight / 2
+                );
+            });
+        });
+
+        // ===== INITIALIZATION =====
+        window.addEventListener('load', () => {
+            initThreeJS();
+            animateContent();
+            pageTransitionIn();
+        });
+
+        window.addEventListener('resize', () => {
+            const canvas = document.getElementById('confetti-canvas');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+</html>
